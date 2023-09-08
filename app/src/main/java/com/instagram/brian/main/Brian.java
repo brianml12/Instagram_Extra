@@ -3,6 +3,10 @@ package com.instagram.brian.main;
 import android.app.Activity;
 import android.os.Build;
 
+import com.instagram.brian.decoding.InstaDecodingApi;
+
+import java.util.List;
+
 public class Brian {
     private static int posicion = 0;
 
@@ -16,8 +20,18 @@ public class Brian {
 
     public static void descargar(Object json_media, Activity actividad){
         if(isPermisoEscrituraAlmacenamientoExt()){
-            
+
+        }else{
+            try {
+                List listaMedia = InstaDecodingApi.getListaMedia(json_media);
+            }catch (Exception e){
+
+            }
         }
+    }
+
+    private static void iniciarActividadDialogoPermiso(){
+
     }
 
     private static boolean isPermisoEscrituraAlmacenamientoExt(){
