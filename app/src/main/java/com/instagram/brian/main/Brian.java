@@ -24,6 +24,13 @@ public class Brian {
         }else{
             try {
                 List listaMedia = InstaDecodingApi.getListaMedia(json_media);
+                if(listaMedia!=null){
+
+                }else{
+                    String linkMedia = getLinkMedia(obj);
+                    DownloadTask downloadTask = new DownloadTask(activity, userName);
+                    downloadTask.execute(linkMedia);
+                }
             }catch (Exception e){
 
             }
