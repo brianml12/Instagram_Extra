@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Build;
 
 import com.instagram.brian.decoding.InstaDecodingApi;
+import com.instagram.brian.downloadtask.DownloadTask;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class Brian {
 
                 }else{
                     String linkMedia = getLinkMedia(obj);
-                    DownloadTask downloadTask = new DownloadTask(activity, userName);
+                    DownloadTask downloadTask = new DownloadTask(actividad);
                     downloadTask.execute(linkMedia);
                 }
             }catch (Exception e){

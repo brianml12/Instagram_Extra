@@ -2,10 +2,15 @@ package com.instagram.brian.downloadtask;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -36,15 +41,60 @@ public class DownloadTask extends AsyncTask<String, Integer, String> {
     protected String doInBackground(String... urls) {
         String url = urls[0];
         File archivoSalida = getArchivo(url);
+        HttpURLConnection conexion = null;
         try{
             URL urlObj = new URL(url);
-            HttpURLConnection conexion = (HttpURLConnection) urlObj.openConnection();
+            conexion = (HttpURLConnection) urlObj.openConnection();
             conexion.connect();
-            if(conexion.getResponseCode() != HttpURLConnection.)
-
-
+            if(conexion.getResponseCode() == HttpURLConnection.HTTP_OK){
+                int longitudArchivo = conexion.getContentLength();
+                FileOutputStream outputStream = new FileOutputStream(archivoSalida);
+                InputStream inputStream = conexion.getInputStream();
+                byte[] buffer = new byte[4096];
+                int bytesleidos;
+                long totalBytesleidos = 0;
+                while ((bytesleidos = inputStream.read(buffer)) > 0) {
+                    outputStream.write(buffer, 0, bytesleidos);
+                    totalBytesleidos += bytesleidos;
+                    int progress = (int) (totalBytesleidos * 100 / longitudArchivo);
+                    publishProgress(progress);
+                }
+                outputStream.close();
+                inputStream.close();
+                Intent intent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
+                intent.setData(Uri.fromFile(archivoSalida));
+                this.context.sendBroadcast(intent);
+                return archivoSalida.getPath();
+            }else {
+                return "error server returned HTTP " + conexion.getResponseCode() + " " + conexion.getResponseMessage();
+            }
         }catch (Exception e) {
             return null;
+        } finally {
+            if(conexion!=null){
+                conexion.disconnect();
+            }
+        }
+    }
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        super.onProgressUpdate(values);
+        dialogoProgreso.setProgress(values[0]);
+    }
+
+    @Override
+    protected void onPostExecute(String textoToast) {
+        super.onPostExecute(textoToast);
+        dialogoProgreso.dismiss();
+        if (textoToast != null) {
+            if(textoToast.contains("error server returned HTTP")){
+                Toast.makeText(context, textoToast, Toast.LENGTH_SHORT);
+            } else{
+                Toast.makeText(context, "Guardado en " + textoToast, Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(context, "Error al descargar el archivo", Toast.LENGTH_SHORT).show();
         }
     }
 
